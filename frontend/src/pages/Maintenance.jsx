@@ -1,13 +1,28 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
 import Badge from '../components/Badge';
+import Spinner from '../components/Spinner';
+
+function statusRingClass(status) {
+  if (status === 'Available') return 'available';
+  if (status === 'In Shop')   return 'shop';
+  if (status === 'On Trip')   return 'ontrip';
+  return '';
+}
+
+function statusIcon(status) {
+  if (status === 'Available') return 'ti-circle-check';
+  if (status === 'In Shop')   return 'ti-tool';
+  if (status === 'On Trip')   return 'ti-truck';
+  return 'ti-circle';
+}
 
 export default function Maintenance() {
   const [vehicles, setVehicles] = useState([]);
-  const [logs, setLogs] = useState([]);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [busyId, setBusyId] = useState(null);
+  const [error, setError]       = useState('');
+  const [loading, setLoading]   = useState(true);
+  const [logs, setLogs]         = useState([]);
+  const [busyId, setBusyId]     = useState(null);
 
   async function load() {
     setLoading(true);
@@ -52,6 +67,10 @@ export default function Maintenance() {
     }
   }
 
+  const inShop    = vehicles.filter((v) => v.status === 'In Shop');
+  const available = vehicles.filter((v) => v.status === 'Available');
+  const onTrip    = vehicles.filter((v) => v.status === 'On Trip');
+
   return (
     <div>
       <div className="page-head">
@@ -61,40 +80,82 @@ export default function Maintenance() {
         </div>
       </div>
 
-      {error && <div className="alert" style={{ margin: '0 0 16px' }}>{error}</div>}
+      {error && <div className="alert" style={{ margin: '0 0 16px' }}><i className="ti ti-alert-circle" />{error}</div>}
 
+      {/* Summary stats */}
+      <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', marginBottom: 24 }}>
+        <div className="kpi-card">
+          <div className="kpi-icon green"><i className="ti ti-circle-check" /></div>
+          <div className="kpi-label">Available</div>
+          <div className="kpi-value c-green">{available.length}</div>
+        </div>
+        <div className="kpi-card">
+          <div className="kpi-icon red"><i className="ti ti-tool" /></div>
+          <div className="kpi-label">In Shop</div>
+          <div className="kpi-value c-red">{inShop.length}</div>
+        </div>
+        <div className="kpi-card">
+          <div className="kpi-icon amber"><i className="ti ti-truck" /></div>
+          <div className="kpi-label">On Trip</div>
+          <div className="kpi-value c-amber">{onTrip.length}</div>
+        </div>
+      </div>
+
+      {/* Vehicle cards */}
       <div className="panel">
-        <div className="panel-head"><h3>Fleet status</h3></div>
+        <div className="panel-head">
+          <h3><i className="ti ti-tool" style={{ marginRight: 8, color: 'var(--cyan)' }} />Fleet Status</h3>
+        </div>
         {loading ? (
-          <div className="spinner-text">Loading…</div>
+          <Spinner text="Loading vehicles…" />
+        ) : vehicles.length === 0 ? (
+          <div className="empty"><i className="ti ti-truck-off" />No vehicles registered yet.</div>
         ) : (
-          <table>
-            <thead>
-              <tr><th>Vehicle</th><th>Registration</th><th>Status</th><th></th></tr>
-            </thead>
-            <tbody>
-              {vehicles.map((v) => (
-                <tr key={v._id}>
-                  <td>{v.name}</td>
-                  <td className="mono">{v.registrationNumber}</td>
-                  <td><Badge status={v.status} /></td>
-                  <td style={{ textAlign: 'right' }}>
-                    {v.status === 'In Shop' ? (
-                      <button className="btn btn-sm" disabled={busyId === v._id} onClick={() => returnFromShop(v._id)}>
-                        <i className="ti ti-check"></i>Mark serviced
-                      </button>
-                    ) : v.status === 'Available' ? (
-                      <button className="btn btn-sm" disabled={busyId === v._id} onClick={() => sendToShop(v._id)}>
-                        <i className="ti ti-tool"></i>Send for service
-                      </button>
-                    ) : (
-                      <span style={{ fontSize: 12, color: 'var(--text-lo)' }}>Vehicle is on trip</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="maint-grid">
+            {vehicles.map((v, i) => (
+              <div className="maint-card" key={v._id} style={{ animationDelay: `${i * 50}ms` }}>
+                <div className={`maint-status-ring ${statusRingClass(v.status)}`}>
+                  <i className={`ti ${statusIcon(v.status)}`} />
+                </div>
+                <div>
+                  <div className="maint-vehicle-name">{v.name}</div>
+                  <div className="maint-vehicle-reg">{v.registrationNumber}</div>
+                  <div style={{ marginTop: 8, display: 'flex', justifyContent: 'center' }}>
+                    <Badge status={v.status} />
+                  </div>
+                </div>
+                <div>
+                  {v.status === 'In Shop' ? (
+                    <button
+                      className="btn btn-sm"
+                      style={{ width: '100%', justifyContent: 'center' }}
+                      disabled={busyId === v._id}
+                      onClick={() => returnFromShop(v._id)}
+                      id={`service-done-${v._id}`}
+                    >
+                      <i className="ti ti-check" />
+                      {busyId === v._id ? 'Updating…' : 'Mark serviced'}
+                    </button>
+                  ) : v.status === 'Available' ? (
+                    <button
+                      className="btn btn-sm"
+                      style={{ width: '100%', justifyContent: 'center', color: 'var(--amber)', borderColor: 'rgba(245,158,11,0.3)' }}
+                      disabled={busyId === v._id}
+                      onClick={() => sendToShop(v._id)}
+                      id={`send-to-shop-${v._id}`}
+                    >
+                      <i className="ti ti-tool" />
+                      {busyId === v._id ? 'Updating…' : 'Send for service'}
+                    </button>
+                  ) : (
+                    <div style={{ fontSize: 11, color: 'var(--text-lo)', textAlign: 'center', padding: '4px 0' }}>
+                      <i className="ti ti-lock" style={{ marginRight: 4 }} />Vehicle on trip
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>

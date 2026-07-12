@@ -1,7 +1,7 @@
 const BASE = '/api';
 
 function getToken() {
-  return localStorage.getItem('transitops_token');
+  return localStorage.getItem('fleetforge_token') || localStorage.getItem('transitops_token');
 }
 
 async function request(path, { method = 'GET', body, auth = true } = {}) {
@@ -16,36 +16,43 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
     body: body ? JSON.stringify(body) : undefined,
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(data.message || `Request failed (${res.status})`);
-  }
+  if (!res.ok) throw new Error(data.message || `Request failed (${res.status})`);
   return data;
 }
 
 export const api = {
-  login: (email, password) => request('/auth/login', { method: 'POST', body: { email, password }, auth: false }),
-  register: (payload) => request('/auth/register', { method: 'POST', body: payload, auth: false }),
+  // Auth
+  login:          (email, password) => request('/auth/login',            { method: 'POST', body: { email, password }, auth: false }),
+  register:       (payload)         => request('/auth/register',         { method: 'POST', body: payload, auth: false }),
+  updateProfile:  (payload)         => request('/auth/profile',          { method: 'PATCH', body: payload }),
+  changePassword: (currentPassword, newPassword) => request('/auth/change-password', { method: 'PATCH', body: { currentPassword, newPassword } }),
 
-  getVehicles: (status) => request(`/vehicles${status ? `?status=${status}` : ''}`),
-  createVehicle: (payload) => request('/vehicles', { method: 'POST', body: payload }),
+  // Vehicles
+  getVehicles:    (status)  => request(`/vehicles${status ? `?status=${status}` : ''}`),
+  createVehicle:  (payload) => request('/vehicles', { method: 'POST', body: payload }),
 
-  getDrivers: (status) => request(`/drivers${status ? `?status=${status}` : ''}`),
-  createDriver: (payload) => request('/drivers', { method: 'POST', body: payload }),
+  // Drivers
+  getDrivers:     (status)  => request(`/drivers${status ? `?status=${status}` : ''}`),
+  createDriver:   (payload) => request('/drivers', { method: 'POST', body: payload }),
 
-  getTrips: (status) => request(`/trips${status ? `?status=${status}` : ''}`),
-  dispatchTrip: (payload) => request('/trips/dispatch', { method: 'POST', body: payload }),
-  finishTrip: (id, outcome) => request(`/trips/${id}/finish`, { method: 'PATCH', body: { outcome } }),
+  // Trips
+  getTrips:       (status)  => request(`/trips${status ? `?status=${status}` : ''}`),
+  dispatchTrip:   (payload) => request('/trips/dispatch',          { method: 'POST',  body: payload }),
+  finishTrip:     (id, outcome) => request(`/trips/${id}/finish`,  { method: 'PATCH', body: { outcome } }),
 
-  getMaintenance: () => request('/maintenance'),
-  startMaintenance: (payload) => request('/maintenance/start', { method: 'POST', body: payload }),
-  completeMaintenance: (id, cost) => request(`/maintenance/${id}/complete`, { method: 'PATCH', body: { cost } }),
+  // Maintenance
+  getMaintenance:      ()        => request('/maintenance'),
+  startMaintenance:    (payload) => request('/maintenance/start',    { method: 'POST',  body: payload }),
+  completeMaintenance: (id)      => request(`/maintenance/${id}/complete`, { method: 'PATCH' }),
 
-  getExpenses: (tripId) => request(`/expenses${tripId ? `?tripId=${tripId}` : ''}`),
-  createExpense: (payload) => request('/expenses', { method: 'POST', body: payload }),
+  // Expenses
+  getExpenses:    (tripId)  => request(`/expenses${tripId ? `?tripId=${tripId}` : ''}`),
+  createExpense:  (payload) => request('/expenses', { method: 'POST', body: payload }),
 
-  getDashboard: () => request('/reports/dashboard'),
+  // Reports
+  getDashboard:   () => request('/reports/dashboard'),
   getUtilization: () => request('/reports/utilization'),
-  getCost: () => request('/reports/cost'),
+  getCost:        () => request('/reports/cost'),
 };
 
 export { getToken };
