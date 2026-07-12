@@ -16,16 +16,20 @@ const TYPE_ICONS = {
   Truck:   '🚛',
   Van:     '🚐',
   Trailer: '🚚',
+  Tempo:   '🛺',
+  SUV:     '🚙',
+  Other:   '📦'
 };
 
 function statusClass(status) {
   if (status === 'Available') return 'available';
   if (status === 'On Trip')   return 'ontrip';
   if (status === 'In Shop')   return 'shop';
+  if (status === 'Retired')   return 'offduty';
   return '';
 }
 
-export default function Vehicles() {
+export default function Fleet() {
   const [vehicles, setVehicles] = useState([]);
   const [form, setForm]         = useState(EMPTY);
   const [error, setError]       = useState('');
@@ -77,12 +81,22 @@ export default function Vehicles() {
     }
   }
 
+  // Group vehicles by type
+  const groupedVehicles = vehicles.reduce((acc, v) => {
+    if (!acc[v.type]) acc[v.type] = [];
+    acc[v.type].push(v);
+    return acc;
+  }, {});
+
+  // Sort the keys so they appear in a consistent order
+  const orderedTypes = ['Truck', 'Trailer', 'Van', 'Tempo', 'SUV', 'Other'].filter(t => groupedVehicles[t]);
+
   return (
     <div>
       <div className="page-head">
         <div>
-          <div className="page-title">Vehicle Registry</div>
-          <div className="page-desc">Trucks and vans in the fleet, with live availability status.</div>
+          <div className="page-title">Fleet</div>
+          <div className="page-desc">Manage your entire fleet of vehicles, segregated by category.</div>
         </div>
         <button className="btn btn-primary" id="add-vehicle-btn" onClick={() => setShowForm((v) => !v)}>
           <i className={`ti ${showForm ? 'ti-x' : 'ti-plus'}`} />
@@ -110,7 +124,12 @@ export default function Vehicles() {
               <div className="field">
                 <label>Type</label>
                 <select value={form.type} onChange={(e) => set('type', e.target.value)}>
-                  <option>Truck</option><option>Van</option><option>Trailer</option>
+                  <option>Truck</option>
+                  <option>Trailer</option>
+                  <option>Van</option>
+                  <option>Tempo</option>
+                  <option>SUV</option>
+                  <option>Other</option>
                 </select>
               </div>
               <div className="field">
@@ -135,48 +154,52 @@ export default function Vehicles() {
         </div>
       )}
 
-      {/* Fleet grid */}
-      <div className="panel">
-        <div className="panel-head">
-          <h3>
-            <i className="ti ti-list" style={{ marginRight: 8, color: 'var(--cyan)' }} />
-            Fleet
-            <span style={{ marginLeft: 8, fontSize: 12, background: 'var(--cyan-bg)', color: 'var(--cyan)', padding: '2px 8px', borderRadius: 100, border: '1px solid rgba(34,211,238,0.2)' }}>
-              {vehicles.length}
-            </span>
-          </h3>
-        </div>
-        {loading ? (
-          <Spinner text="Loading fleet…" />
-        ) : vehicles.length === 0 ? (
+      {/* Fleet Display */}
+      {loading ? (
+        <Spinner text="Loading fleet…" />
+      ) : vehicles.length === 0 ? (
+        <div className="panel">
           <div className="empty">
             <i className="ti ti-truck-off" />
             No vehicles registered yet.
           </div>
-        ) : (
-          <div className="vehicle-grid">
-            {vehicles.map((v, i) => (
-              <div
-                key={v._id}
-                className={`vehicle-card status-${statusClass(v.status)}`}
-                style={{ animationDelay: `${i * 50}ms` }}
-              >
-                <div className="vehicle-card-header">
-                  <div className="vehicle-type-icon">{TYPE_ICONS[v.type] || '🚛'}</div>
-                  <Badge status={v.status} />
+        </div>
+      ) : (
+        orderedTypes.map(type => (
+          <div className="panel" key={type} style={{ marginBottom: 24 }}>
+            <div className="panel-head" style={{ borderBottom: '1px solid var(--line)', paddingBottom: 12, marginBottom: 16 }}>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 18 }}>
+                <span style={{ fontSize: 24 }}>{TYPE_ICONS[type]}</span>
+                {type}s
+                <span style={{ fontSize: 12, background: 'var(--bg-3)', color: 'var(--text-hi)', padding: '2px 8px', borderRadius: 100 }}>
+                  {groupedVehicles[type].length}
+                </span>
+              </h3>
+            </div>
+            <div className="vehicle-grid">
+              {groupedVehicles[type].map((v, i) => (
+                <div
+                  key={v._id}
+                  className={`vehicle-card status-${statusClass(v.status)}`}
+                  style={{ animationDelay: `${i * 50}ms` }}
+                >
+                  <div className="vehicle-card-header">
+                    <div className="vehicle-reg mono" style={{ fontSize: 16, fontWeight: 700 }}>{v.registrationNumber}</div>
+                    <Badge status={v.status} />
+                  </div>
+                  <div className="vehicle-name" style={{ marginBottom: 12, fontSize: 14, color: 'var(--text-lo)' }}>
+                    {v.name}
+                  </div>
+                  <div className="vehicle-meta">
+                    <span><i className="ti ti-weight" />{v.loadCapacityKg.toLocaleString()} kg Capacity</span>
+                    <span><i className="ti ti-road" />{v.odometerKm.toLocaleString()} km</span>
+                  </div>
                 </div>
-                <div className="vehicle-reg">{v.registrationNumber}</div>
-                <div className="vehicle-name">{v.name}</div>
-                <div className="vehicle-meta">
-                  <span><i className="ti ti-weight" />{v.loadCapacityKg.toLocaleString()} kg</span>
-                  <span><i className="ti ti-road" />{v.odometerKm.toLocaleString()} km</span>
-                  <span><i className="ti ti-category" />{v.type}</span>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        )}
-      </div>
+        ))
+      )}
     </div>
   );
 }

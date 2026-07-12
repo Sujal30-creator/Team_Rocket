@@ -12,6 +12,7 @@ const driverSchema = new mongoose.Schema(
       enum: ['Available', 'On Trip', 'Off Duty', 'Suspended'],
       default: 'Available',
     },
+    embedding: { type: [Number], select: false }
   },
   { timestamps: true }
 );

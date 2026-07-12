@@ -936,3 +936,69 @@ tbody tr:last-child td { border-bottom: none; }
 .section-label { font-family: var(--font-display); font-size: 12.5px; font-weight: 700; color: var(--text-lo); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 12px; }
 .divider { height: 1px; background: var(--line); margin: 20px 0; }
 .tag { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 100px; font-size: 11px; font-weight: 600; background: var(--bg-3); color: var(--text-mid); border: 1px solid var(--line); }
+
+/* ── Stepper UI ── */
+.trip-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 16px 0;
+  padding: 0 10px;
+  position: relative;
+}
+.stepper-line {
+  position: absolute;
+  top: 14px;
+  left: 20px;
+  right: 20px;
+  height: 2px;
+  background: var(--line);
+  z-index: 1;
+}
+.stepper-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 2;
+  position: relative;
+  width: 60px;
+}
+.stepper-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-3);
+  border: 2px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--text-lo);
+  transition: all 0.3s;
+}
+.stepper-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-lo);
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+.stepper-step.active .stepper-circle {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--bg);
+  box-shadow: 0 0 10px rgba(245,197,24,0.3);
+}
+.stepper-step.active .stepper-label {
+  color: var(--gold);
+}
+.stepper-step.completed .stepper-circle {
+  background: var(--cyan);
+  border-color: var(--cyan);
+  color: var(--bg);
+}
+.stepper-step.completed .stepper-label {
+  color: var(--cyan);
+}

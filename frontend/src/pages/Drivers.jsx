@@ -26,6 +26,10 @@ export default function Drivers() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving]   = useState(false);
   const [showForm, setShowForm] = useState(false);
+  
+  // Semantic Search
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searching, setSearching] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -35,6 +39,19 @@ export default function Drivers() {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleSearch(e) {
+    e.preventDefault();
+    if (!searchQuery.trim()) return load();
+    setSearching(true);
+    try {
+      setDrivers(await api.searchDrivers(searchQuery));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSearching(false);
     }
   }
 
@@ -111,6 +128,31 @@ export default function Drivers() {
           </form>
         </div>
       )}
+
+      {/* Semantic Search UI */}
+      <div className="panel" style={{ marginBottom: 20, padding: 16 }}>
+        <form onSubmit={handleSearch} style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <div style={{ flex: 1, position: 'relative' }}>
+            <i className="ti ti-sparkles" style={{ position: 'absolute', left: 14, top: 12, color: 'var(--gold)' }} />
+            <input 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Ask AI to find a driver (e.g. 'I need a rested driver with high safety score')"
+              style={{ width: '100%', padding: '10px 14px 10px 40px', borderRadius: 8, border: '1px solid var(--gold)', background: 'var(--bg)', color: 'var(--text-hi)' }}
+              disabled={searching}
+            />
+          </div>
+          <button type="submit" className="btn btn-primary" disabled={searching} style={{ background: 'var(--gold)', color: 'var(--bg)' }}>
+            {searching ? <i className="ti ti-loader" style={{ animation: 'spin 1s linear infinite' }} /> : <i className="ti ti-search" />}
+            {searching ? 'Searching...' : 'Semantic Search'}
+          </button>
+          {searchQuery && (
+            <button type="button" className="btn btn-ghost" onClick={() => { setSearchQuery(''); load(); }}>
+              Clear
+            </button>
+          )}
+        </form>
+      </div>
 
       {/* Roster */}
       <div className="panel">

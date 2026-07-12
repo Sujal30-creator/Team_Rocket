@@ -10,6 +10,7 @@ const tripRoutes = require('./routes/tripRoutes');
 const maintenanceRoutes = require('./routes/maintenanceRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const reportRoutes = require('./routes/reportRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 
 const app = express();
 app.use(cors());
@@ -24,6 +25,7 @@ app.use('/api/trips', tripRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/chat', chatRoutes);
 
 app.use((req, res) => res.status(404).json({ message: 'Route not found.' }));
 app.use((err, req, res, next) => {

@@ -28,11 +28,11 @@ exports.dashboardSummary = async (req, res) => {
   const [vehicles, drivers, runningTrips] = await Promise.all([
     Vehicle.find(),
     Driver.find(),
-    Trip.countDocuments({ status: 'Running' }),
+    Trip.countDocuments({ status: { $in: ['Dispatched', 'On Trip'] } }),
   ]);
 
   res.json({
-    activeVehicles: vehicles.filter((v) => v.status !== 'In Shop').length,
+    activeVehicles: vehicles.filter((v) => v.status !== 'In Shop' && v.status !== 'Retired').length,
     availableVehicles: vehicles.filter((v) => v.status === 'Available').length,
     vehiclesInShop: vehicles.filter((v) => v.status === 'In Shop').length,
     driversOnDuty: drivers.filter((d) => d.status !== 'Off Duty' && d.status !== 'Suspended').length,

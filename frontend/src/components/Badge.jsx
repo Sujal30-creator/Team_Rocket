@@ -1,10 +1,15 @@
 const MAP = {
+  // Vehicle / Driver
   Available:  'b-available',
   'On Trip':  'b-ontrip',
   'In Shop':  'b-shop',
   'Off Duty': 'b-offduty',
   Suspended:  'b-offduty',
-  Running:    'b-running',
+  Retired:    'b-offduty',
+
+  // Trip
+  Draft:      'b-offduty',
+  Dispatched: 'b-running',
   Completed:  'b-available',
   Cancelled:  'b-offduty',
 };

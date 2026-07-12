@@ -9,10 +9,11 @@ const tripSchema = new mongoose.Schema(
     cargoWeightKg: { type: Number, required: true, min: 0 },
     status: {
       type: String,
-      enum: ['Running', 'Completed', 'Cancelled'],
-      default: 'Running',
+      enum: ['Draft', 'Dispatched', 'On Trip', 'Completed', 'Cancelled'],
+      default: 'Draft',
     },
-    dispatchedAt: { type: Date, default: Date.now },
+    eta: { type: Date },
+    dispatchedAt: { type: Date },
     completedAt: { type: Date },
   },
   { timestamps: true }

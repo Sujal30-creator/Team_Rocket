@@ -5,7 +5,7 @@ import Spinner from '../components/Spinner';
 
 const fmtINR = (n) => '₹' + Number(n).toLocaleString('en-IN');
 
-export default function Reports() {
+export default function Analytics() {
   const [utilization, setUtilization] = useState(null);
   const [cost, setCost]               = useState(null);
   const [error, setError]             = useState('');
@@ -145,7 +145,7 @@ export default function Reports() {
     <div>
       <div className="page-head">
         <div>
-          <div className="page-title">Reports</div>
+          <div className="page-title">Analytics</div>
           <div className="page-desc">Fleet utilization and operational cost, generated from live data.</div>
         </div>
         <button className="btn" onClick={load} id="reports-refresh-btn">

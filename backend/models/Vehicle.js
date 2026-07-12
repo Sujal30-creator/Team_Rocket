@@ -4,15 +4,16 @@ const vehicleSchema = new mongoose.Schema(
   {
     registrationNumber: { type: String, required: true, unique: true, uppercase: true, trim: true },
     name: { type: String, required: true, trim: true },
-    type: { type: String, enum: ['Truck', 'Van', 'Trailer'], default: 'Truck' },
+    type: { type: String, enum: ['Truck', 'Van', 'Trailer', 'Tempo', 'SUV', 'Other'], default: 'Truck' },
     loadCapacityKg: { type: Number, required: true, min: 0 },
     odometerKm: { type: Number, default: 0, min: 0 },
     acquisitionCost: { type: Number, default: 0, min: 0 },
     status: {
       type: String,
-      enum: ['Available', 'On Trip', 'In Shop'],
+      enum: ['Available', 'On Trip', 'In Shop', 'Retired'],
       default: 'Available',
     },
+    currentLocation: { type: String, default: 'Headquarters' },
   },
   { timestamps: true }
 );

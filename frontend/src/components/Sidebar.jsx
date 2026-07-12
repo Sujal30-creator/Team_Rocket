@@ -1,16 +1,17 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ProfileModal from './ProfileModal';
 
-const LINKS = [
-  { to: '/',            label: 'Dashboard',      icon: 'ti-layout-dashboard', end: true },
-  { to: '/vehicles',    label: 'Vehicles',        icon: 'ti-truck'            },
-  { to: '/drivers',     label: 'Drivers',         icon: 'ti-id-badge-2'       },
-  { to: '/trips',       label: 'Trips',           icon: 'ti-route'            },
-  { to: '/maintenance', label: 'Maintenance',     icon: 'ti-tool'             },
-  { to: '/fuel',        label: 'Fuel & Expenses', icon: 'ti-receipt'          },
-  { to: '/reports',     label: 'Reports',         icon: 'ti-chart-bar'        },
+const ALL_LINKS = [
+  { to: '/',            label: 'Dashboard',       icon: 'ti-layout-dashboard', end: true },
+  { to: '/fleet',       label: 'Fleet',           icon: 'ti-truck',            roles: ['Fleet Manager'] },
+  { to: '/drivers',     label: 'Drivers',         icon: 'ti-id-badge-2',       roles: ['Fleet Manager', 'Safety Officer'] },
+  { to: '/trips',       label: 'Trips',           icon: 'ti-route',            roles: ['Fleet Manager', 'Dispatcher'] },
+  { to: '/maintenance', label: 'Maintenance',     icon: 'ti-tool',             roles: ['Fleet Manager'] },
+  { to: '/fuel',        label: 'Fuel & Expenses', icon: 'ti-receipt',          roles: ['Fleet Manager', 'Financial Analyst'] },
+  { to: '/analytics',   label: 'Analytics',       icon: 'ti-chart-bar',        roles: ['Fleet Manager', 'Financial Analyst'] },
+  { to: '/compliance',  label: 'Compliance',      icon: 'ti-shield-check',     roles: ['Fleet Manager', 'Safety Officer'] },
 ];
 
 function getInitials(name = '') {
@@ -20,6 +21,15 @@ function getInitials(name = '') {
 export default function Sidebar() {
   const { user } = useAuth();
   const [showProfile, setShowProfile] = useState(false);
+
+  // Filter links based on user role
+  const visibleLinks = useMemo(() => {
+    if (!user) return [];
+    return ALL_LINKS.filter((link) => {
+      if (!link.roles) return true; // Available to all (e.g., Dashboard)
+      return link.roles.includes(user.role);
+    });
+  }, [user]);
 
   return (
     <>
@@ -36,7 +46,7 @@ export default function Sidebar() {
         {/* Nav */}
         <nav className="sidebar-nav">
           <div className="nav-section-label">Navigation</div>
-          {LINKS.map((l) => (
+          {visibleLinks.map((l) => (
             <NavLink
               key={l.to}
               to={l.to}
@@ -47,6 +57,11 @@ export default function Sidebar() {
               {l.label}
             </NavLink>
           ))}
+          
+          <button className="nav-item" onClick={() => setShowProfile(true)} style={{ marginTop: 'auto', border: 'none', background: 'transparent', textAlign: 'left', width: '100%', cursor: 'pointer' }}>
+            <i className="ti ti-settings" aria-hidden="true" />
+            Settings
+          </button>
         </nav>
 
         {/* User footer — click to open profile */}

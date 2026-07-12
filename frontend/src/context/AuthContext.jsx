@@ -21,8 +21,8 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('transitops_user');
   };
 
-  const login = useCallback(async (email, password) => {
-    const data = await api.login(email, password);
+  const login = useCallback(async (email, password, rememberMe) => {
+    const data = await api.login(email, password, rememberMe);
     persist(data.token, data.user);
     setUser(data.user);
     return data.user;
